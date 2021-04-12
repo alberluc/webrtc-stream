@@ -37,7 +37,7 @@ export class WebRTC {
         await this.clients[clientId].setLocalDescription(description)
         this.io.socket.emit('send-offer', {
             toClientId: clientId,
-            description: this.clients[clientId].localDescription
+            offer: this.clients[clientId].localDescription
         });
     }
 
@@ -65,22 +65,22 @@ export class WebRTC {
         this.clients[clientId].addStream(this.stream);
     }
 
-    async onReceiveOffer({fromClientId, description}) {
+    async onReceiveOffer({fromClientId, offer}) {
         const isMe = fromClientId === this.io.socket.id
         if (isMe) return
 
-        await this.clients[fromClientId].setRemoteDescription(description)
-        const answerDescription = await this.clients[fromClientId].createAnswer()
-        await this.clients[fromClientId].setLocalDescription(new RTCSessionDescription(answerDescription));
+        await this.clients[fromClientId].setRemoteDescription(offer)
+        const answer = await this.clients[fromClientId].createAnswer()
+        await this.clients[fromClientId].setLocalDescription(new RTCSessionDescription(answer));
         this.io.socket.emit('send-answer', {
             toClientId: fromClientId,
-            description: answerDescription
+            answer
         });
     }
 
-    async onReceiveAnswer({fromClientId, description}) {
+    async onReceiveAnswer({fromClientId, answer}) {
         await this.clients[fromClientId].setRemoteDescription(
-            new RTCSessionDescription(description)
+            new RTCSessionDescription(answer)
         )
     }
 

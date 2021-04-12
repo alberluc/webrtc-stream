@@ -18,16 +18,16 @@ io.on('connection', async client => {
         clientId: client.id,
     })
 
-    client.on('send-offer', ({toClientId, description}) => {
+    client.on('send-offer', ({toClientId, offer}) => {
         io.to(toClientId).emit('receive-offer', {
-            description,
+            offer,
             fromClientId: client.id
         })
     })
 
-    client.on('send-answer', ({toClientId, description}) => {
+    client.on('send-answer', ({toClientId, answer}) => {
         io.to(toClientId).emit('receive-answer', {
-            description,
+            answer,
             fromClientId: client.id
         })
     })
