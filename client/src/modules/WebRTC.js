@@ -4,9 +4,8 @@ export class WebRTC {
 
     get peerConnectionConfig() {
         return {
-            'iceServers': [
-                {'urls': 'stun:stun.services.mozilla.com'},
-                {'urls': 'stun:stun.l.google.com:19302'},
+            iceServers: [
+                {urls: 'stun:stun.l.google.com:19302'},
             ]
         }
     }
@@ -22,6 +21,7 @@ export class WebRTC {
         this.io.connect(() => {
             this.io.socket.on('init', this.onInit.bind(this))
             this.io.socket.on('client-join', this.onClientJoin.bind(this))
+            this.io.socket.on('client-disconnect', this.onClientDisconnect.bind(this))
             this.io.socket.on('receive-offer', this.onReceiveOffer.bind(this))
             this.io.socket.on('receive-answer', this.onReceiveAnswer.bind(this))
             this.io.socket.on('receive-candidate', this.onReceiveCandidate.bind(this))
@@ -36,7 +36,16 @@ export class WebRTC {
         this.createPeerConnection(clientId)
         const description = await this.clients[clientId].createOffer()
         await this.clients[clientId].setLocalDescription(description)
-        this.io.socket.emit('send-offer', this.clients[clientId].localDescription);
+        this.io.socket.emit('send-offer', {
+            toClientId: clientId,
+            description: this.clients[clientId].localDescription
+        });
+    }
+
+    onClientDisconnect({clientId}) {
+        if (this.onRemoveStream) {
+            this.onRemoveStream(clientId)
+        }
     }
 
     createPeerConnection(clientId) {
@@ -49,8 +58,13 @@ export class WebRTC {
                 });
             }
         }
+        this.clients[clientId].oniceconnectionstatechange = ev => {
+            console.log(this.clients[clientId].iceConnectionState)
+        }
         this.clients[clientId].onaddstream = (e) => {
-            console.log('Remote stream', e.stream)
+            if (this.onAddStream) {
+                this.onAddStream(clientId, e.stream)
+            }
         }
         this.clients[clientId].addStream(this.stream);
     }
@@ -61,6 +75,7 @@ export class WebRTC {
 
         await this.clients[fromClientId].setRemoteDescription(description)
         const answerDescription = await this.clients[fromClientId].createAnswer()
+        await this.clients[fromClientId].setLocalDescription(new RTCSessionDescription(answerDescription));
         this.io.socket.emit('send-answer', {
             toClientId: fromClientId,
             description: answerDescription
@@ -68,7 +83,9 @@ export class WebRTC {
     }
 
     async onReceiveAnswer({fromClientId, description}) {
-        await this.clients[fromClientId].setRemoteDescription(description)
+        await this.clients[fromClientId].setRemoteDescription(
+            new RTCSessionDescription(description)
+        )
     }
 
     async onReceiveCandidate({fromClientId, candidate}) {

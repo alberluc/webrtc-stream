@@ -2,13 +2,22 @@ import './index.css'
 import {Medias} from "./modules/Medias";
 import {WebRTC} from "./modules/WebRTC";
 
+/**
+ * Start the application
+ * @return {Promise<void>}
+ */
 const start = async () => {
     const stream = await Medias.getLocalStream();
-
-    const localVideo = document.getElementById('local-video')
-    localVideo.srcObject = stream
+    Medias.createVideoElement({stream});
 
     const webrtc = new WebRTC(stream)
+    webrtc.onAddStream = (id, stream) => {
+        Medias.createVideoElement({id, stream});
+    }
+    webrtc.onRemoveStream = id => {
+        Medias.removeVideoElement(id)
+    }
+
     webrtc.init()
 }
 

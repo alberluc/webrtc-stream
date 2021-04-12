@@ -18,8 +18,8 @@ io.on('connection', async client => {
         clientId: client.id,
     })
 
-    client.on('send-offer', description => {
-        client.broadcast.emit('receive-offer', {
+    client.on('send-offer', ({toClientId, description}) => {
+        io.to(toClientId).emit('receive-offer', {
             description,
             fromClientId: client.id
         })
@@ -36,6 +36,16 @@ io.on('connection', async client => {
         io.to(toClientId).emit('receive-candidate', {
             candidate,
             fromClientId: client.id
+        })
+        /*io.to(client.id).emit('receive-candidate', {
+            candidate,
+            fromClientId: toClientId
+        })*/
+    })
+
+    client.on('disconnect', () => {
+        client.broadcast.emit('client-disconnect', {
+            clientId: client.id
         })
     })
 })
