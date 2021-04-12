@@ -11,7 +11,6 @@ export class WebRTC {
     }
 
     constructor(stream) {
-        console.log('My stream ', stream)
         this.stream = stream
         this.clients = []
         this.io = new IO()
@@ -57,9 +56,6 @@ export class WebRTC {
                     candidate: e.candidate
                 });
             }
-        }
-        this.clients[clientId].oniceconnectionstatechange = ev => {
-            console.log(this.clients[clientId].iceConnectionState)
         }
         this.clients[clientId].onaddstream = (e) => {
             if (this.onAddStream) {
