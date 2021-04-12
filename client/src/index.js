@@ -8,11 +8,18 @@ import {WebRTC} from "./modules/WebRTC";
  */
 const start = async () => {
     const stream = await Medias.getLocalStream();
-    Medias.createVideoElement({stream});
+    Medias.createVideoElement({
+        stream,
+        containerId: 'me'
+    });
 
     const webrtc = new WebRTC(stream)
     webrtc.onAddStream = (id, stream) => {
-        Medias.createVideoElement({id, stream});
+        Medias.createVideoElement({
+            id,
+            stream,
+            containerId: 'remote'
+        });
     }
     webrtc.onRemoveStream = id => {
         Medias.removeVideoElement(id)

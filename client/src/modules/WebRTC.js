@@ -33,7 +33,6 @@ export class WebRTC {
 
     async onClientJoin({clientId}) {
         this.createPeerConnection(clientId)
-        this.clients[clientId].addStream(this.stream)
         const description = await this.clients[clientId].createOffer()
         await this.clients[clientId].setLocalDescription(description)
         this.io.socket.emit('send-offer', {
@@ -50,6 +49,7 @@ export class WebRTC {
 
     createPeerConnection(clientId) {
         this.clients[clientId] = new RTCPeerConnection(this.peerConnectionConfig)
+        this.clients[clientId].addStream(this.stream)
         this.clients[clientId].onicecandidate = e => {
             if (e.candidate != null) {
                 this.io.socket.emit('send-candidate', {

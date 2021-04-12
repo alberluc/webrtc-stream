@@ -37,10 +37,6 @@ io.on('connection', async client => {
             candidate,
             fromClientId: client.id
         })
-        /*io.to(client.id).emit('receive-candidate', {
-            candidate,
-            fromClientId: toClientId
-        })*/
     })
 
     client.on('disconnect', () => {
