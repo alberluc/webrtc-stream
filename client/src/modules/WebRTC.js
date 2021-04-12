@@ -1,4 +1,4 @@
-import {IO} from "./IO";
+import {IO} from "./IO"
 
 export class WebRTC {
 
@@ -33,12 +33,13 @@ export class WebRTC {
 
     async onClientJoin({clientId}) {
         this.createPeerConnection(clientId)
+        this.clients[clientId].addStream(this.stream)
         const description = await this.clients[clientId].createOffer()
         await this.clients[clientId].setLocalDescription(description)
         this.io.socket.emit('send-offer', {
             toClientId: clientId,
             offer: this.clients[clientId].localDescription
-        });
+        })
     }
 
     onClientDisconnect({clientId}) {
@@ -48,13 +49,13 @@ export class WebRTC {
     }
 
     createPeerConnection(clientId) {
-        this.clients[clientId] = new RTCPeerConnection(this.peerConnectionConfig);
+        this.clients[clientId] = new RTCPeerConnection(this.peerConnectionConfig)
         this.clients[clientId].onicecandidate = e => {
             if (e.candidate != null) {
                 this.io.socket.emit('send-candidate', {
                     toClientId: clientId,
                     candidate: e.candidate
-                });
+                })
             }
         }
         this.clients[clientId].onaddstream = (e) => {
@@ -62,7 +63,6 @@ export class WebRTC {
                 this.onAddStream(clientId, e.stream)
             }
         }
-        this.clients[clientId].addStream(this.stream);
     }
 
     async onReceiveOffer({fromClientId, offer}) {
@@ -71,11 +71,11 @@ export class WebRTC {
 
         await this.clients[fromClientId].setRemoteDescription(offer)
         const answer = await this.clients[fromClientId].createAnswer()
-        await this.clients[fromClientId].setLocalDescription(new RTCSessionDescription(answer));
+        await this.clients[fromClientId].setLocalDescription(new RTCSessionDescription(answer))
         this.io.socket.emit('send-answer', {
             toClientId: fromClientId,
             answer
-        });
+        })
     }
 
     async onReceiveAnswer({fromClientId, answer}) {
