@@ -1,7 +1,9 @@
 const server = require('http').createServer()
 const io = require('socket.io')(server, {
     cors: {
-        origin: "https://webrtc.lucienalbert.fr"
+        origin: "https://webrtc.lucienalbert.fr",
+        methods: ["GET", "POST"],
+        credentials: true
     }
 })
 const port = 3000

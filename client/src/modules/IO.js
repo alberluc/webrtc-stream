@@ -6,7 +6,8 @@ export class IO {
         const isDev = false
         const url = isDev ? 'http://localhost:3000' : 'https://server-webrtc.lucienalbert.fr'
         this.socket = io(url, {
-            autoConnect: false
+            autoConnect: false,
+            withCredentials: true
         });
     }
 
